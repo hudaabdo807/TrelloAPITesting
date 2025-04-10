@@ -1,0 +1,2282 @@
+{
+	"info": {
+		"_postman_id": "362d9ab8-10b1-435c-b7fb-039a5addf705",
+		"name": "Trello Test Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36965027"
+	},
+	"item": [
+		{
+			"name": "Board",
+			"item": [
+				{
+					"name": "Create Boards",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set the new board name as a variable for use in subsequent requests\r",
+									"pm.environment.set(\"boardName\",\"board\"+ parseInt(Math.random()*10));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"boardId\", jsonData.id);\r",
+									"\r",
+									" //ensure it create board successfully \r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//test what will happen when we omit any of required parameter\r",
+									"pm.test(\"Required parameters are missing\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.error).to.include(\"ERROR\");\r",
+									"});\r",
+									"//ensure you can't create duplicate board\r",
+									"pm.test(\"Board name already exists\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.error).to.include(\"ERROR\");\r",
+									"});\r",
+									"//ensure that you can't left the board name empty\r",
+									"pm.test(\"Error message indicates invalid name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.error).to.include(\"ERROR\");\r",
+									"});\r",
+									"\r",
+									"//Create a board with a valid name\r",
+									"pm.test(\"Board name matches input name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(responseBody.name).to.eql(pm.environment.get(\"CardName\"));\r",
+									"});\r",
+									"\r",
+									"//Create a board with an invalid name\r",
+									"pm.test(\"Create a board with an invalid name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.name).to.eql(\"@#$$\");\r",
+									"});\r",
+									"\r",
+									"//Create a board with an already created name before\r",
+									"pm.test(\"Create a board with an invalid name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(responseBody.message).to.include(\"already exist\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"@#$$\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.trello.com/1/boards/?token={{token}}&key={{Key}}&name={{boardName}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								""
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "name",
+									"value": "{{boardName}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned board properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.be.a('string');\r",
+									"    pm.expect(responseBody.name).to.not.be.empty;\r",
+									"    // Add other expected properties here (e.g., description, closed, stars)\r",
+									"});\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						},
+						"description": "Request a single board."
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"\r",
+									"//test what will happen when we omit any of required parameter\r",
+									"pm.test(\"Required parameters are missing\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.error).to.include(\"ERROR\");\r",
+									"});\r",
+									"//update the board description\r",
+									"pm.test(\"Board description is updated\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"     pm.expect(pm.response.code).to.eql(200);\r",
+									"    pm.expect(responseBody.desc).to.equal(\"Hello this is my board\");\r",
+									"});\r",
+									"\r",
+									"//Update a board's name\r",
+									"pm.test(\"Board name is updated\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"    pm.expect(responseBody.name).to.equal(\"test\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}?key={{Key}}&token={{token}}&closed=false&desc=Hello this is my board&prefs/permissionLevel=public&name=test",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "closed",
+									"value": "false"
+								},
+								{
+									"key": "pinned",
+									"value": "true",
+									"disabled": true
+								},
+								{
+									"key": "desc",
+									"value": "Hello this is my board"
+								},
+								{
+									"key": "prefs/permissionLevel",
+									"value": "public"
+								},
+								{
+									"key": "name",
+									"value": "test"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//board is deleted \r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//test what will happen when we omit any of required parameter\r",
+									"pm.test(\"Required parameters are missing\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(401);\r",
+									"    pm.expect(responseBody).to.include(\"invalid app key\");\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent board\r",
+									"pm.test(\"Error message indicates board not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Memberships of a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"//test what will happen when we omit any of required parameter\r",
+									"pm.test(\"Required parameters are missing\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(401);\r",
+									"    pm.expect(responseBody).to.include(\"invalid app key\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/memberships?key={{Key}}&token={{token}}&filter=all&activity=false&orgMemberType=false&member=false",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"memberships"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "filter",
+									"value": "all"
+								},
+								{
+									"key": "activity",
+									"value": "false"
+								},
+								{
+									"key": "orgMemberType",
+									"value": "false"
+								},
+								{
+									"key": "member",
+									"value": "false"
+								}
+							]
+						},
+						"description": "Get information about the memberships users have to the board.EndFragment"
+					},
+					"response": []
+				},
+				{
+					"name": "Get the Members of a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//test what will happen when we omit any of required parameter\r",
+									"pm.test(\"Required parameters are missing\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(401);\r",
+									"    pm.expect(responseBody).to.include(\"invalid app key\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned members\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(Array.isArray(responseBody)).to.be.true;\r",
+									"\r",
+									"    responseBody.forEach(function (member) {\r",
+									"        pm.expect(member.id).to.be.a('string');\r",
+									"        pm.expect(member.id).to.not.be.empty;\r",
+									"        pm.expect(member.fullName).to.be.a('string');\r",
+									"        pm.expect(member.fullName).to.not.be.empty;\r",
+									"        // Add other expected member properties here (e.g., username, avatar)\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/members?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"members"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invite Member to Board via email",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id of member from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"var memberId = jsonData.id;\r",
+									"pm.environment.set(\"memberId\", memberId);\r",
+									"\r",
+									"//invite the member successfully \r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/members?email=rs1414@fayoum.edu.eg&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"members"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "rs1414@fayoum.edu.eg"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Member from Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//remove member successfully \r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"//Attempt to remove a non-existent member\r",
+									"pm.test(\"Error message indicates member not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(401);\r",
+									"    pm.expect(responseBody).to.include(\"membership not found\");\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent board\r",
+									"pm.test(\"Error message indicates board not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1000ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/members/{{memberId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"members",
+								"{{memberId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						},
+						"description": "admin need authauthorization to delete"
+					},
+					"response": []
+				}
+			],
+			"description": "1- Get information about the memberships users have to the board.EndFragment"
+		},
+		{
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Create a new Card",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set the new card name as a variable for use in subsequent requests\r",
+									"pm.environment.set(\"CardName\",\"card\"+ parseInt(Math.random()*10));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"CardId\", jsonData.id);\r",
+									"\r",
+									"//card is create successfully\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Create a card with a valid name\r",
+									"pm.test(\"Board name matches input name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(responseBody.name).to.eql(pm.environment.get(\"CardName\"));\r",
+									"});\r",
+									"//Create a card with an already created name before\r",
+									"pm.test(\"Create a board with an invalid name\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(pm.response.code).to.eql(400);\r",
+									"    pm.expect(responseBody.message).to.include(\"already exist\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"@#$$\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.trello.com/1/cards?idList={{ListId}}&key={{Key}}&token={{token}}&name={{CardName}}&desc=this is a new card",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "idList",
+									"value": "{{ListId}}"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "name",
+									"value": "{{CardName}}"
+								},
+								{
+									"key": "desc",
+									"value": "this is a new card"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//get the card correctly\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Attempt to get card using invalid cardid\r",
+									"pm.test(\"Error message indicates member not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned card properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.be.a('string');\r",
+									"    pm.expect(responseBody.name).to.not.be.empty;\r",
+									"    pm.expect(responseBody.pos).to.be.a('number');\r",
+									"    // Add other expected properties here (e.g., description, labels, members)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//update the board name\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.expect(pm.response.to.have.status(200));\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(responseBody.name).to.eql(\"test\")\r",
+									"});\r",
+									"\r",
+									"//check that due data is updated\r",
+									"pm.test(\"Update due date\", function () {\r",
+									"    var dueDate = \"2024-9-10\"; // Replace with your desired due date\r",
+									"\r",
+									"    pm.sendRequest({\r",
+									"        url: pm.request.url.toString(),\r",
+									"        method: 'PUT',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({ \"due\": dueDate })\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"Error updating card due date:\", err);\r",
+									"        } else {\r",
+									"            pm.expect(res.code).to.eql(200);\r",
+									"            pm.expect(res.json().due).to.eql(dueDate);\r",
+									"        }\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"//update the Card description\r",
+									"pm.test(\"Card description is updated\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"     pm.expect(pm.response.code).to.eql(200);\r",
+									"    pm.expect(responseBody.desc).to.equal(\"this is new card\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}?key={{Key}}&token={{token}}&name=test&pos=top&due=9/10/2024",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "name",
+									"value": "test",
+									"description": "Whether the card should be archived (closed: true)"
+								},
+								{
+									"key": "pos",
+									"value": "top",
+									"description": "The position of the card in its list. top, bottom, or a positive float"
+								},
+								{
+									"key": "due",
+									"value": "9/10/2024"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent card\r",
+									"pm.test(\"Error message indicates card not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Attachment On Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"ِAttachId\", jsonData.id);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent card\r",
+									"pm.test(\"Error message indicates cardid not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response body contains error message\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"    pm.expect(responseBody.message).to.include(\"invalid attachment format\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}/attachments?key={{Key}}&token={{token}}&url=https://docs.google.com/document/d/16EpMNR_keiXHlBvXB0PjbgTDs8aaHvMH/edit?usp=sharing%26ouid=113207115529168036916%26rtpof=true%26sd=true",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}",
+								"attachments"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "url",
+									"value": "https://docs.google.com/document/d/16EpMNR_keiXHlBvXB0PjbgTDs8aaHvMH/edit?usp=sharing%26ouid=113207115529168036916%26rtpof=true%26sd=true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an Attachment on a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent card\r",
+									"pm.test(\"Error message indicates card not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"Could not find the specified attachment. 3\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}/attachments/{{ِAttachId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}",
+								"attachments",
+								"{{ِAttachId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add a new comment to a Card Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}/actions/comments?text=this is new comment&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}",
+								"actions",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "text",
+									"value": "this is new comment",
+									"description": "The comment"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						},
+						"description": "Add a new comment to a card"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Checklist on a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/cards/{{CardId}}/checklists?key={{Key}}&token={{token}}&name=test",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"cards",
+								"{{CardId}}",
+								"checklists"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "name",
+									"value": "test"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "List",
+			"item": [
+				{
+					"name": "Create a List on a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"ListId\", jsonData.id);\r",
+									"\r",
+									"//Create a list with a valid name and board ID.\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set the new board name as a variable for use in subsequent requests\r",
+									"pm.environment.set(\"ListName\",\"list\"+ parseInt(Math.random()*10));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/lists?name={{ListName}}&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{ListName}}"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lists on a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned list properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    // Check if the response body is an array of lists\r",
+									"    pm.expect(Array.isArray(responseBody)).to.be.true;\r",
+									"\r",
+									"    // Iterate through each list and verify its properties\r",
+									"    responseBody.forEach(function (list) {\r",
+									"        pm.expect(list.id).to.be.a('string');\r",
+									"        pm.expect(list.id).to.not.be.empty;\r",
+									"        pm.expect(list.name).to.be.a('string');\r",
+									"        pm.expect(list.name).to.not.be.empty;\r",
+									"        pm.expect(list.pos).to.be.a('number');\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Get Lists on a Board with invalid board id\",function () { \r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/lists?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify updated list properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.eql(\"no 1\"); // Replace with the updated name\r",
+									"    pm.expect(responseBody.pos).to.eql(2); // Replace with the updated position\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/lists/{{ListId}}?key={{Key}}&token={{token}}&name=no 1&idBoard={{boardId}}&pos=2",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"lists",
+								"{{ListId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "name",
+									"value": "no 1"
+								},
+								{
+									"key": "idBoard",
+									"value": "{{boardId}}"
+								},
+								{
+									"key": "pos",
+									"value": "2"
+								}
+							]
+						},
+						"description": "1- you need to create new board first  \n2- add the new board id to move the list to"
+					},
+					"response": []
+				},
+				{
+					"name": "Archive all Cards in List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify archived cards\", function () {\r",
+									"    // Retrieve the updated list to check if the cards are archived\r",
+									"    pm.sendRequest('https://api.trello.com/1/lists/{{listId}}', function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"Error retrieving updated list:\", err);\r",
+									"            return;\r",
+									"        }\r",
+									"\r",
+									"        var responseBody = res.json();\r",
+									"        var cards = responseBody.cards;\r",
+									"\r",
+									"        cards.forEach(function (card) {\r",
+									"            pm.expect(card.closed).to.be.true;\r",
+									"        });\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/lists/{{ListId}}/archiveAllCards?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"lists",
+								"{{ListId}}",
+								"archiveAllCards"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive or unarchive a list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify  list Archived\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.eql(\"no 1\"); // Replace with the updated name\r",
+									"    pm.expect(responseBody.closed).to.eql(true); // Replace with the updated position\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify  list UNArchived\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.eql(\"no 1\"); // Replace with the updated name\r",
+									"    pm.expect(responseBody.closed).to.eql(false); // Replace with the updated position\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/lists/{{ListId}}/closed?key={{Key}}&token={{token}}&value=false",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"lists",
+								"{{ListId}}",
+								"closed"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "value",
+									"value": "false",
+									"description": "Set to true to close (archive) the list"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "label",
+			"item": [
+				{
+					"name": "Create a Label on a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"labelId\", jsonData.id);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify created label properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.eql(\"New Label\");\r",
+									"    pm.expect(responseBody.color).to.eql(\"orange\");\r",
+									"    pm.expect(responseBody.idBoard).to.eql(pm.environment.get(\"boardId\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/boards/{{boardId}}/labels?name=New Label&color=orange&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"boards",
+								"{{boardId}}",
+								"labels"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "New Label"
+								},
+								{
+									"key": "color",
+									"value": "orange"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Labels on a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned labels\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an('object');\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.be.a('string');\r",
+									"    pm.expect(responseBody.name).to.not.be.empty;\r",
+									"    pm.expect(responseBody.color).to.be.a('string');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/labels/{{labelId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"labels",
+								"{{labelId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Label",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify updated label properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.name).to.eql(\"label\");\r",
+									"    pm.expect(responseBody.color).to.eql(\"yellow\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/labels/{{labelId}}?key={{Key}}&token={{token}}&name=label&color=yellow",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"labels",
+								"{{labelId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "name",
+									"value": "label"
+								},
+								{
+									"key": "color",
+									"value": "yellow"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Label",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Attempt to delete a non-existent label\r",
+									"pm.test(\"Error message indicates label not found\", function () {\r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"    pm.expect(responseBody).to.include(\"The requested resource was not found.\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/labels/{{labelId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"labels",
+								"{{labelId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search for Members",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify search results\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(Array.isArray(responseBody)).to.be.true;\r",
+									"\r",
+									"    responseBody.forEach(function (member) {\r",
+									"        // Check for name match (case-insensitive)\r",
+									"        pm.expect(member.fullName.toLowerCase().includes(\"radwa sayed\".toLowerCase())).to.be.true;\r",
+									"\r",
+									"        // Check for other properties (adjust as needed)\r",
+									"        pm.expect(member.id).to.be.a('string');\r",
+									"        pm.expect(member.id).to.not.be.empty;\r",
+									"        pm.expect(member.avatarUrl).to.be.a('string');\r",
+									"        // ... add more assertions for other properties\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.trello.com/1/search/members/?query=fullName = radwa sayed&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"search",
+								"members",
+								""
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "fullName = radwa sayed"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members",
+			"item": [
+				{
+					"name": "Get a Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify returned member properties\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.fullName).to.be.a('string');\r",
+									"    pm.expect(responseBody.fullName).to.not.be.empty;\r",
+									"    pm.expect(responseBody.username).to.be.a('string');\r",
+									"    pm.expect(responseBody.username).to.not.be.empty;\r",
+									"    pm.expect(responseBody.email).to.be.a('string');\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/members/66e5785a0e69bddf04116eaa?key={{Key}}&token={{token}}&boards={{boardName}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"members",
+								"66e5785a0e69bddf04116eaa"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "boards",
+									"value": "{{boardName}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Star for Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// extract the id of stared board from the response body\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"StarId\", jsonData.id);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify created star\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.idBoard).to.eql(pm.environment.get(\"boardId\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/members/66e5785a0e69bddf04116eaa/boardStars?idBoard={{boardId}}&pos=top&key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"members",
+								"66e5785a0e69bddf04116eaa",
+								"boardStars"
+							],
+							"query": [
+								{
+									"key": "idBoard",
+									"value": "{{boardId}}"
+								},
+								{
+									"key": "pos",
+									"value": "top"
+								},
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a boardStar of Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify star status\", function () {\r",
+									"    var responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody.id).to.be.a('string');\r",
+									"    pm.expect(responseBody.id).to.not.be.empty;\r",
+									"    pm.expect(responseBody.idBoard).to.eql(pm.environment.get(\"boardId\"));\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/members/66e5785a0e69bddf04116eaa/boardStars/{{StarId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"members",
+								"66e5785a0e69bddf04116eaa",
+								"boardStars",
+								"{{StarId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Star for Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify star is deleted\", function () {\r",
+									"    // Retrieve the member's star status to verify if the star is deleted\r",
+									"    pm.sendRequest(\"https://api.trello.com/1/boards/boardId/members/memberId/stars\", function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"Error retrieving star status:\", err);\r",
+									"            return;\r",
+									"        }\r",
+									"\r",
+									"        var responseBody = res.json();\r",
+									"\r",
+									"        // Check if the starred property is false\r",
+									"        pm.expect(responseBody.starred).to.be.false;\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.trello.com/1/members/66e5785a0e69bddf04116eaa/boardStars/{{StarId}}?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"members",
+								"66e5785a0e69bddf04116eaa",
+								"boardStars",
+								"{{StarId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification",
+			"item": [
+				{
+					"name": "Mark all Notifications as read",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.trello.com/1/notifications/all/read?key={{Key}}&token={{token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"trello",
+								"com"
+							],
+							"path": [
+								"1",
+								"notifications",
+								"all",
+								"read"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{Key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
